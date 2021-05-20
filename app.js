@@ -35,7 +35,8 @@ form.addEventListener('submit', e => {
     e.preventDefault();
 
     const quiz = {
-        correctAnswers: ['B','A','A','B'],
+        counter: 0,
+        correctAnswers: ['B','D','A','C'],
         userAnswers: [
             e.target.userAnswer1.value,
             e.target.userAnswer2.value,
@@ -58,21 +59,32 @@ form.addEventListener('submit', e => {
 
             switch (score) {
                 case 100:
-                    quizResultMessage.setAttribute('class', 'quizResultMessage alert alert-success');
+                    quizResultMessage.setAttribute('class', 'quizResultMessage text-center alert alert-success');
                     break;
                 case 75:
-                    quizResultMessage.setAttribute('class', 'quizResultMessage alert alert-primary');
+                    quizResultMessage.setAttribute('class', 'quizResultMessage text-center alert alert-primary');
                     break;
                 case 50:
-                    quizResultMessage.setAttribute('class', 'quizResultMessage alert alert-warning');
+                    quizResultMessage.setAttribute('class', 'quizResultMessage text-center alert alert-warning');
                     break;      
                 default:
-                    quizResultMessage.setAttribute('class', 'quizResultMessage alert alert-danger');
+                    quizResultMessage.setAttribute('class', 'quizResultMessage text-center alert alert-danger');
                     break;
             }
-            return quizResultMessage.textContent = `Sua taxa de acerto foi de ${score}%`;
+            return quizResultMessage.innerHTML = `<div class="h5">Sua taxa de acerto foi de <strong class="display-4">${this.counter}%</strong></div>`;
+        },
+        interval: null,
+        scoreCounter(){
+            this.interval = setInterval( () => {
+                
+                if (this.counter >= this.getScore()) {
+                    clearInterval(this.interval);
+                }
+                
+                this.showResult();
+                this.counter++;
+            }, 10)
         },
     };    
-
-    quiz.showResult();
+    quiz.scoreCounter();
 });
