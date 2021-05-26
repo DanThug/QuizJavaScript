@@ -31,60 +31,74 @@ resetButton.addEventListener('click', () => {
     quizResultMessage.textContent = '';
 });
 
+const quiz = {
+    counter: 0,
+    correctAnswers: ['B','D','A','C'],
+    userAnswers() {
+        const choices = [];
+        
+        this.correctAnswers.forEach( (_, index) => {
+            let answer = form[`userAnswer${index + 1}`].value;
+
+            choices.push(answer);
+        } );
+        
+        return choices;
+    },
+    getScore() {
+        let score = 0;
+        const answers = this.userAnswers();
+
+        answers.forEach((answer, i) => {
+            const match = answer === this.correctAnswers[i];
+
+            if (match) {
+                score += 25;
+            }
+        });
+        
+        return score;
+    },
+    interval: null,
+    animateScore(){
+        this.counter = 0;
+        this.interval = setInterval( () => {
+            
+            if (this.counter >= this.getScore()) {
+                clearInterval(this.interval);
+            }
+
+            quizResultMessage.innerHTML = `<div class="h5">Você acertou <strong class="display-4">${this.counter}%</strong> do Quiz!</div>`;
+            this.counter++;
+        }, 10);
+    },
+    showResult() {
+        const score = this.getScore();
+        let alertClass = '';
+
+        switch (score) {
+            case 100:
+                alertClass = 'alert-success';
+                break;
+            case 75:
+                alertClass = 'alert-primary';
+                break;
+            case 50:
+                alertClass = 'alert-warning';
+                break;      
+            default:
+                alertClass = 'alert-danger';
+                break;
+        }
+
+        quizResultMessage.classList.remove(...quizResultMessage.classList);
+        quizResultMessage.classList.add('quizResultMessage', 'text-center', 'alert', alertClass);
+        this.animateScore();
+    }
+};
+
 form.addEventListener('submit', e => {
     e.preventDefault();
 
-    const quiz = {
-        counter: 0,
-        correctAnswers: ['B','D','A','C'],
-        userAnswers: [
-            e.target.userAnswer1.value,
-            e.target.userAnswer2.value,
-            e.target.userAnswer3.value,
-            e.target.userAnswer4.value
-        ],
-        getScore() {
-            let maxScore = 0;
-
-            this.userAnswers.forEach((answer, i) => {
-                const match = answer === this.correctAnswers[i];
-                if (match) {
-                    maxScore += 25;
-                }
-            });
-            return maxScore;
-        },
-        showResult() {
-            const score = this.getScore();
-
-            switch (score) {
-                case 100:
-                    quizResultMessage.setAttribute('class', 'quizResultMessage text-center alert alert-success');
-                    break;
-                case 75:
-                    quizResultMessage.setAttribute('class', 'quizResultMessage text-center alert alert-primary');
-                    break;
-                case 50:
-                    quizResultMessage.setAttribute('class', 'quizResultMessage text-center alert alert-warning');
-                    break;      
-                default:
-                    quizResultMessage.setAttribute('class', 'quizResultMessage text-center alert alert-danger');
-                    break;
-            }
-            return quizResultMessage.innerHTML = `<div class="h5">Sua taxa de acerto foi de <strong class="display-4">${this.counter}%</strong></div>`;
-        },
-        interval: null,
-        scoreCounter(){
-            this.interval = setInterval( () => {
-                
-                if (this.counter >= this.getScore()) {
-                    clearInterval(this.interval);
-                }
-                
-                this.showResult();
-                this.counter++;
-            }, 10)
-        },
-    };    
-    quiz.scoreCounter();
+    quiz.showResult();
 });
