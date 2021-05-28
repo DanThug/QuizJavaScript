@@ -35,29 +35,12 @@ const quiz = {
     counter: 0,
     correctAnswers: ['B','D','A','C'],
     userAnswers() {
-        const choices = [];
-        
-        this.correctAnswers.forEach( (_, index) => {
-            let answer = form[`userAnswer${index + 1}`].value;
-
-            choices.push(answer);
-        } );
-        
-        return choices;
+        return this.correctAnswers.map( (_, index) => form[`userAnswer${index + 1}`].value );  
     },
     getScore() {
-        let score = 0;
         const answers = this.userAnswers();
-
-        answers.forEach((answer, i) => {
-            const match = answer === this.correctAnswers[i];
-
-            if (match) {
-                score += 25;
-            }
-        });
-        
-        return score;
+        return answers.reduce( (accumulator, answer, index) => 
+            answer === this.correctAnswers[index] ? accumulator += 25 : accumulator, 0 );
     },
     interval: null,
     animateScore(){
