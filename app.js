@@ -22,66 +22,91 @@ Link do repositório do curso: https://github.com/roger-melo-treinamentos/curso-
 Ps: se você não conseguiu fazer tudo o que foi pedido acima, abra a issue mesmo assim =)
 */
 
-const form = document.querySelector('form');
+const formQuiz = document.querySelector('form');
+const correctAnswers = ['B', 'D', 'A', 'C'];
 const quizResultMessage = document.querySelector('.quizResultMessage');
-const resetButton = form.resetButton;
+const buttonReset = document.querySelector('button[type="reset"]');
+let counter = 0;
 
-resetButton.addEventListener('click', () => {
-    quizResultMessage.setAttribute('class', 'quizResultMessage');
-    quizResultMessage.textContent = '';
-});
+const getUserAnswers = () => correctAnswers.map((_, index) => formQuiz[`userAnswer${index + 1}`].value)
 
-const quiz = {
-    counter: 0,
-    correctAnswers: ['B','D','A','C'],
-    userAnswers() {
-        return this.correctAnswers.map( (_, index) => form[`userAnswer${index + 1}`].value );  
-    },
-    getScore() {
-        const answers = this.userAnswers();
-        return answers.reduce( (accumulator, answer, index) => 
-            answer === this.correctAnswers[index] ? accumulator += 25 : accumulator, 0 );
-    },
-    interval: null,
-    animateScore(){
-        this.counter = 0;
-        this.interval = setInterval( () => {
-            
-            if (this.counter >= this.getScore()) {
-                clearInterval(this.interval);
-            }
+const calculateScore = () => {
+    let score = 0;
+    const userAnswers = getUserAnswers();
 
-            quizResultMessage.innerHTML = `<div class="h5">Você acertou <strong class="display-4">${this.counter}%</strong> do Quiz!</div>`;
-            this.counter++;
-        }, 10);
-    },
-    showResult() {
-        const score = this.getScore();
-        let alertClass = '';
+    correctAnswers.forEach((answer, index) => {
+        const isAnswerMatch = answer === userAnswers[index];
 
-        switch (score) {
-            case 100:
-                alertClass = 'alert-success';
-                break;
-            case 75:
-                alertClass = 'alert-primary';
-                break;
-            case 50:
-                alertClass = 'alert-warning';
-                break;      
-            default:
-                alertClass = 'alert-danger';
-                break;
+        if (isAnswerMatch) {
+            score += 25;
+        }
+    });
+    return score;
+}
+
+const getClassAlert = () => {
+    const finalScore = calculateScore();
+    let classAlert = '';
+
+    switch (finalScore) {
+        case 100:
+            classAlert = 'alert-success';
+            break;
+        case 75:
+            classAlert = 'alert-primary';
+            break;
+        case 50:
+            classAlert = 'alert-warning';
+            break;
+        default:
+            classAlert = 'alert-danger';
+            break;
+    }
+    return classAlert;
+}
+
+const animateScore = () => {
+    const percentage = document.querySelector('span');
+    const finalScore = calculateScore();
+    let interval = null;
+
+    counter = 0;
+    
+    interval = setInterval(() => {
+        if (counter === finalScore) {
+            clearInterval(interval);
         }
 
-        quizResultMessage.classList.remove(...quizResultMessage.classList);
-        quizResultMessage.classList.add('quizResultMessage', 'text-center', 'alert', alertClass);
-        this.animateScore();
+    percentage.textContent = counter++;
+    }, 10);
+}
+
+const showResult = () => {
+    const classAlert = getClassAlert();
+
+    quizResultMessage.classList.remove(...quizResultMessage.classList);
+    quizResultMessage.classList.add('quizResultMessage', 'alert', 'text-center', classAlert);
+    quizResultMessage.innerHTML = `Você acertou <span class="display-4"></span>% do Quiz!`;
+    animateScore();
+}
+
+// LISTENERS
+formQuiz.addEventListener('submit', event => {
+    event.preventDefault();
+
+    showResult();
+});
+
+formQuiz.addEventListener('click', ({target}) => {
+    const isALabel = target.classList.contains('form-check-label');
+
+    if (isALabel) {
+        target.previousElementSibling.checked = true;
     }
-};
+});
 
-form.addEventListener('submit', e => {
-    e.preventDefault();
-
-    quiz.showResult();
+buttonReset.addEventListener('click', () => {
+    quizResultMessage.classList.remove(...quizResultMessage.classList);
+    quizResultMessage.classList.add('quizResultMessage', 'alert', 'text-center');
+    quizResultMessage.textContent = '';
 });
